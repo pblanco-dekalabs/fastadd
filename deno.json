@@ -1,0 +1,6 @@
+{
+  "tasks": {
+    "build": "deno compile -A fastadd.ts",
+    "test": "deno run -A fastadd.ts"
+  }
+}
