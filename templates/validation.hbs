@@ -1,0 +1,34 @@
+import { TypedRouteReply, TypedRouteRequest } from "@/routes/types"
+import { baseResponseSchema } from "@/server/config/response"
+
+export const {{schemaName}} = {
+  $id: "{{schemaId}}",
+  type: "object",
+  properties: { // TODO: Populate the schema
+    id: { type: "string" },
+  },
+  additionalProperties: false,
+  required: ["id"],
+} as const
+{{#each info.children}}
+  {{#with (camelCase this.name) as |name|}}
+  {{#with (pascalCase this.name) as |typeName|}}
+
+export const {{name}} = {
+  operationId: "{{name}}",
+  description: "TODO",
+  tags: [],
+  response: {
+    200: baseResponseSchema({
+      // TODO: Add the true schema
+    })
+  },
+  security: [{{#if this.needsAuth}}{ bearerAuth: [] }{{/if}}]
+} as const
+
+export type {{typeName}}Request = TypedRouteRequest<typeof {{name}}>
+export type {{typeName}}Reply = TypedRouteReply<typeof {{name}}>
+
+  {{/with}}
+  {{/with}}
+{{/each}}

@@ -5,9 +5,16 @@ import {
   ROUTES_DIR,
   SERVICES_DIR,
 } from "./fs/routes.ts";
-import { routesTemplate } from "./templates/routes.ts";
+import { routesTemplate, validationTemplate } from "./templates/lib.ts";
 import { BootInfo, RouteInfo } from "./types.ts";
 import { $, c, enq } from "./util.ts";
+
+import Handlebars from "npm:handlebars";
+
+Handlebars.registerHelper("camelCase", (str: string) => camelCase(str));
+Handlebars.registerHelper("pascalCase", (str: string) => pascalCase(str));
+Handlebars.registerHelper("snakeCase", (str: string) => snakeCase(str));
+Handlebars.registerHelper("paramCase", (str: string) => paramCase(str));
 
 export async function collectRouteInfo(): Promise<RouteInfo> {
   const { root, crud, shouldAdd } = await enq.prompt([
@@ -98,42 +105,11 @@ export async function bootRoute(info: RouteInfo) {
   });
   await Deno.writeTextFile(rootIndex, indexContent);
   $(c.gray(`Generating ${c.blue(`/api/v1/${rootRes}`)} base schemas...`));
-  const validationContent =
-    `import { TypedRouteReply, TypedRouteRequest } from "@/routes/types"
-import { baseResponseSchema } from "@/server/config/response"
-
-export const ${schemaName} = {
-  $id: "${schemaId}",
-  type: "object",
-  properties: { // TODO: Populate the schema
-    id: { type: "string" },
-  },
-  additionalProperties: false,
-  required: ["id"],
-} as const
-${
-      info.children.map((r) => {
-        const name = camelCase(r.name);
-        const typeName = pascalCase(r.name);
-        return `
-
-export const ${name} = {
-  operationId: "${name}",
-  description: "TODO",
-  tags: [],
-  response: {
-    200: baseResponseSchema({
-      // TODO: Add the true schema
-    })
-  },
-  security: [${r.needsAuth ? "{ bearerAuth: [] }" : ""}]
-} as const
-
-export type ${typeName}Request = TypedRouteRequest<typeof ${name}>
-export type ${typeName}Reply = TypedRouteReply<typeof ${name}>`;
-      }).join("")
-    }
-`;
+  const validationContent = validationTemplate({
+    info,
+    schemaName,
+    schemaId,
+  });
   await Deno.writeTextFile(validationModPath, validationContent);
   $(c.gray(`Generating ${c.blue(`/api/v1/${rootRes}`)} controller...`));
   await Deno.mkdir(CONTROLLERS_DIR, { recursive: true });

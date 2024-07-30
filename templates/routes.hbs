@@ -1,0 +1,43 @@
+import { FastifyInstance } from "fastify"
+
+import { {{controllerName}} } from "@/controllers/{{controllerName}}"
+{{#if info.crud}}
+import { registerCRUDRoutes } from "@/routes/base"
+{{/if}}
+import { server } from "@/server/config/fastify"
+
+import {
+  {{#each info.children}}
+  {{camelCase this.name}},
+  {{/each}}
+  {{schemaName}}
+} from "./validation/{{validationMod}}"
+
+function {{rootFunc}}(fastify: FastifyInstance, _options: any, next: Function) {
+  const {{controllerVar}} = new {{controllerName}}()
+  server.addSchema({{schemaName}})
+  fastify.generateJwtAuthRoutes(fastify, (fastifyDeepInstance: FastifyInstance) => {
+    {{#each info.children}}
+    {{#if this.needsAuth}}
+    const {{paramCase this.name}} = '{{paramCase this.name}}';
+    fastifyDeepInstance.{{this.method}}("/{{paramCase this.name}}", { schema: {{camelCase this.name}} }, async (request, reply) =>
+      {{controllerVar}}.{{camelCase this.name}}(request, reply)
+    )
+    {{/if}}
+    {{/each}}
+    {{#if info.crud}}
+    fastifyDeepInstance.register(registerCRUDRoutes, { schemaId: "{{schemaId}}", controller: {{controllerVar}} })
+    {{/if}}
+  })
+  {{#each info.children}}
+  {{#unless this.needsAuth}}
+  fastify.{{this.method}}("/{{paramCase this.name}}", { schema: {{camelCase this.name}} }, async (request, reply) =>
+    {{controllerVar}}.{{camelCase this.name}}(request, reply)
+  )
+  {{/unless}}
+  {{/each}}
+
+  next()
+}
+
+export default {{rootFunc}}
