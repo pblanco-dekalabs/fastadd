@@ -1,5 +1,7 @@
 import Enquirer from 'npm:enquirer'
-export * as c from "https://deno.land/std@0.224.0/fmt/colors.ts"
+
+import * as c from "https://deno.land/std@0.224.0/fmt/colors.ts"
+export { c }
 
 export const $ = console.log.bind(console)
 
@@ -29,3 +31,19 @@ export async function serializeJson(path: string, object: unknown) {
     return false
   }
 }
+
+const _panicWithCode = <T extends unknown[]>(code: number, ...reason: T): never => {
+  $(c.red('Panic!'), ...reason.map(arg => {
+    if (typeof arg === "string") {
+      return c.red(arg)
+    }
+    return arg
+  }))
+  Deno.exit(code)
+}
+
+export function panic<T extends unknown[]>(...reason: T): never {
+  return _panicWithCode(1, ...reason)
+}
+
+panic.withCode = _panicWithCode

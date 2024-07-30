@@ -1,33 +1,27 @@
 // @deno-types="npm:@types/yargs"
-import yargs from 'npm:yargs'
-import { bootAny, bootRoute, collectRouteInfo } from "./funcs.ts";
-import { $, c, serializeJson, tryReadJson } from "./util.ts";
+import yargs from "npm:yargs";
+import { bootRoute, collectRouteInfo } from "./funcs.ts";
+import { $, c, serializeJson } from "./util.ts";
+import { askRestore, checkRestore, restore } from "./restore.ts";
 
-let ok = false
+let ok = false;
 const args = await yargs(Deno.args)
-  .command('route', 'Creates a new route', () => {}, async () => {
-    ok = true
-    const info = await collectRouteInfo()
-    if (!await serializeJson('.boot.json', info)) {
-      $(c.yellow(`Warning! Could not write .boot.json file`))
+  .command("route", "Creates a new route", () => {}, async () => {
+    ok = true;
+    if (await checkRestore() && await askRestore()) {
+      return await restore();
     }
-    await bootRoute(info)
-  })
-  .command('boot', 'Boots a previous collected information', () => {}, async () => {
-    ok = true
-    const file = await tryReadJson('.boot.json')
-    if (file == null) {
-      $(c.red(`No .boot.json file found! You can't boot a component unless you've first initialized it!`))
-      Deno.exit(2)
-    } else {
-      bootAny(file)
+    const info = await collectRouteInfo();
+    if (!await serializeJson(".boot.json", info)) {
+      $(c.yellow(`Warning! Could not write .boot.json file`));
     }
+    await bootRoute(info);
   })
-  .version('1.0.0')
-  .parse()
+  .version("1.1.0")
+  .parse();
 
-void args
+void args;
 if (!ok) {
-  $(c.red(`Bad usage, use --help`))
-  Deno.exit(1)
+  $(c.red(`Bad usage, use --help`));
+  Deno.exit(1);
 }
