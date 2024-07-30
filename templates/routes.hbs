@@ -21,7 +21,7 @@ function {{rootFunc}}(fastify: FastifyInstance, _options: any, next: Function) {
     {{#if this.needsAuth}}
     const {{paramCase this.name}} = '{{paramCase this.name}}';
     fastifyDeepInstance.{{this.method}}("/{{paramCase this.name}}", { schema: {{camelCase this.name}} }, async (request, reply) =>
-      {{controllerVar}}.{{camelCase this.name}}(request, reply)
+      {{../controllerVar}}.{{camelCase this.name}}(request, reply)
     )
     {{/if}}
     {{/each}}
@@ -32,7 +32,7 @@ function {{rootFunc}}(fastify: FastifyInstance, _options: any, next: Function) {
   {{#each info.children}}
   {{#unless this.needsAuth}}
   fastify.{{this.method}}("/{{paramCase this.name}}", { schema: {{camelCase this.name}} }, async (request, reply) =>
-    {{controllerVar}}.{{camelCase this.name}}(request, reply)
+    {{../controllerVar}}.{{camelCase this.name}}(request, reply)
   )
   {{/unless}}
   {{/each}}

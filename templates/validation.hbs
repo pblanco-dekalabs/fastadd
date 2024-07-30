@@ -11,11 +11,9 @@ export const {{schemaName}} = {
   required: ["id"],
 } as const
 {{#each info.children}}
-  {{#with (camelCase this.name) as |name|}}
-  {{#with (pascalCase this.name) as |typeName|}}
 
-export const {{name}} = {
-  operationId: "{{name}}",
+export const {{camelCase this.name}} = {
+  operationId: "{{camelCase this.name}}",
   description: "TODO",
   tags: [],
   response: {
@@ -26,9 +24,7 @@ export const {{name}} = {
   security: [{{#if this.needsAuth}}{ bearerAuth: [] }{{/if}}]
 } as const
 
-export type {{typeName}}Request = TypedRouteRequest<typeof {{name}}>
-export type {{typeName}}Reply = TypedRouteReply<typeof {{name}}>
+export type {{pascalCase this.name}}Request = TypedRouteRequest<typeof {{camelCase this.name}}>
+export type {{pascalCase this.name}}Reply = TypedRouteReply<typeof {{camelCase this.name}}>
 
-  {{/with}}
-  {{/with}}
 {{/each}}
