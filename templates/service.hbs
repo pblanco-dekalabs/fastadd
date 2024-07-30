@@ -1,0 +1,9 @@
+import { {{repoName}} } from "@/domain/repositories/{{repoName}}"
+import { BaseService } from "@/domain/services/base/BaseService"
+import { ApiError } from "@/errors/ApiError"
+
+export class {{serviceName}} extends BaseService<"{{schemaId}}", {{repoName}}> {
+  constructor() {
+    super(new {{repoName}}())
+  }
+}

@@ -5,7 +5,13 @@ import {
   ROUTES_DIR,
   SERVICES_DIR,
 } from "./fs/routes.ts";
-import { routesTemplate, validationTemplate } from "./templates/lib.ts";
+import {
+  controllerTemplate,
+  repositoryTemplate,
+  routesTemplate,
+  serviceTemplate,
+  validationTemplate,
+} from "./templates/lib.ts";
 import { BootInfo, RouteInfo } from "./types.ts";
 import { $, c, enq } from "./util.ts";
 
@@ -114,64 +120,33 @@ export async function bootRoute(info: RouteInfo) {
   $(c.gray(`Generating ${c.blue(`/api/v1/${rootRes}`)} controller...`));
   await Deno.mkdir(CONTROLLERS_DIR, { recursive: true });
   const controllerModPath = path.join(CONTROLLERS_DIR, controllerName + ".ts");
-  const controllerContent =
-    `import { BaseController } from "@/controllers/base/BaseController"
-import { ${serviceName} } from "@/domain/services/${serviceName}"
-import {${
-      info.children.map((r) => {
-        const typeName = pascalCase(r.name);
-        return `
-  ${typeName}Request,
-  ${typeName}Reply,`;
-      }).join("")
-    }
-} from "@/routes/${rootMod}/validation/${validationMod}"
-
-export class ${controllerName} extends BaseController<"${schemaId}", ${serviceName}> {
-  constructor() {
-    super(new ${serviceName}())
-  }
-  ${
-      info.children.map((r) => {
-        const name = camelCase(r.name);
-        const typeName = pascalCase(r.name);
-        return `
-  async ${name}(request: ${typeName}Request, reply: ${typeName}Reply) {
-    throw new Error('TODO: Not implemented')
-  }`;
-      }).join("")
-    }
-}
-`;
+  const controllerContent = controllerTemplate({
+    controllerName,
+    info,
+    schemaId,
+    serviceName,
+    repoName,
+    schemaName,
+  });
   await Deno.writeTextFile(controllerModPath, controllerContent);
   $(c.gray(`Generating ${c.blue(`/api/v1/${rootRes}`)} service...`));
   await Deno.mkdir(SERVICES_DIR, { recursive: true });
   const servicePath = path.join(SERVICES_DIR, serviceName + ".ts");
-  const serviceContent =
-    `import { ${repoName} } from "@/domain/repositories/${repoName}"
-import { BaseService } from "@/domain/services/base/BaseService"
-import { ApiError } from "@/errors/ApiError"
-
-export class ${serviceName} extends BaseService<"${schemaId}", ${repoName}> {
-  constructor() {
-    super(new ${repoName}())
-  }
-}  
-`;
+  const serviceContent = serviceTemplate({
+    serviceName,
+    schemaId,
+    repoName,
+  });
   await Deno.writeTextFile(servicePath, serviceContent);
   $(c.gray(`Generating ${c.blue(`/api/v1/${rootRes}`)} repository...`));
   await Deno.mkdir(REPOSITORIES_DIR, { recursive: true });
   const repoPath = path.join(REPOSITORIES_DIR, repoName + ".ts");
-  const repoContent =
-    `import { BaseRepository } from "@/domain/repositories/base/BaseRepository"
-import { server } from "@/server/config/fastify"
-
-export class ${repoName} extends BaseRepository<"${schemaId}"> {
-  constructor() {
-    super("${camelCase(schemaId)}", server.database)
-  }
-}  
-`;
+  const repoContent = repositoryTemplate({
+    repoName,
+    schemaId,
+    schemaName,
+    serviceName,
+  });
   await Deno.writeTextFile(repoPath, repoContent);
   $(c.gray(c.italic(`Cleaning up metadata...`)));
   await Deno.remove(`.boot.json`);

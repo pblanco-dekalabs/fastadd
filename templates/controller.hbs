@@ -1,0 +1,20 @@
+import { BaseController } from "@/controllers/base/BaseController"
+import { {{serviceName}} } from "@/domain/services/{{serviceName}}"
+import {
+{{#each info.children}}
+  {{pascalCase this.name}}Request,
+  {{pascalCase this.name}}Reply,{{#if @last}}{{else}}
+{{/if}}
+{{/each}}
+} from "@/routes/{{rootMod}}/validation/{{validationMod}}"
+
+export class {{controllerName}} extends BaseController<"{{schemaId}}", {{serviceName}}> {
+  constructor() {
+    super(new {{serviceName}}())
+  }
+  {{#each info.children}}
+  async {{camelCase this.name}}(request: {{pascalCase this.name}}Request, reply: {{pascalCase this.name}}Reply) {
+    throw new Error('TODO: Not implemented')
+  }
+  {{/each}}
+}

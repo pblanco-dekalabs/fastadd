@@ -1,0 +1,8 @@
+import { BaseRepository } from "@/domain/repositories/base/BaseRepository";
+import { server } from "@/server/config/fastify";
+
+export class {{repoName}} extends BaseRepository<"{{schemaId}}"> {
+  constructor() {
+    super("{{camelCase schemaId}}", server.database);
+  }
+}
