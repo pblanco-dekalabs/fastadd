@@ -11,6 +11,8 @@ fastadd route
 
 Then follow the wizard.
 
+![Peek 2024-07-30 07-54](https://github.com/user-attachments/assets/87944993-9833-4a62-b27e-8390d3037bc4)
+
 ## Help
 
 ```
